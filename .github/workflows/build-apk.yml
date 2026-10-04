@@ -1,0 +1,50 @@
+# Phone se APK banane ke liye GitHub par is filename se save karo:
+# .github/workflows/build-apk.yml
+# Is file mein app ka complete source embedded hai. Extra ZIP upload nahi chahiye.
+name: Build Voice Caller APK
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android build components
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+          cache-disabled: true
+      - name: Create app source
+        shell: bash
+        run: |
+          python3 - <<'PYCODE'
+          import base64, json, zlib
+          from pathlib import Path
+          payload = "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"
+          files = json.loads(zlib.decompress(base64.b64decode(payload)))
+          for name, content in files.items():
+              path = Path("voice-caller") / name
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(content, encoding="utf-8")
+          PYCODE
+      - name: Test contact matching and build APK
+        working-directory: voice-caller
+        run: gradle --no-daemon testDebugUnitTest assembleDebug
+      - name: Downloadable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceCaller-APK
+          path: voice-caller/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
