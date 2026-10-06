@@ -478,3 +478,37 @@ jobs:
                       scroll.setOnApplyWindowInsetsListener((v, insets) -> {
                           layout.setPadding(pad,
                               pad + i
+                                          }
+
+            @Override public void onReadyForSpeech(Bundle params) {
+              if (active && listening)
+                status.setText("Ab contact ka naam bolo.");
+            }
+
+            @Override public void onBeginningOfSpeech() {}
+            @Override public void onRmsChanged(float rmsdB) {}
+            @Override public void onBufferReceived(byte[] buffer) {}
+            @Override public void onEndOfSpeech() {}
+            @Override public void onPartialResults(Bundle results) {}
+            @Override public void onEvent(int eventType, Bundle params) {}
+          }
+          """
+          }
+
+          for name, content in files.items():
+              path = Path("voice-caller") / name
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_text(content.strip() + "\n", encoding="utf-8")
+          PYCODE
+
+      - name: Build APK
+        working-directory: voice-caller
+        run: gradle --no-daemon assembleDebug
+
+      - name: Downloadable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceAI-Assistant-APK
+          path: voice-caller/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
